@@ -1,6 +1,4 @@
 # %%
-import sys 
-sys.path.append('../scripts/')
 from robot import *
 from scipy.stats import multivariate_normal
 import random #追加
