@@ -86,11 +86,14 @@ class IdealRobot:
 
     def one_step(self, time_interval):
         if not self.agent: return        
-        obs = self.sensor.data(self.pose) if self.sensor else None #追加
-        obs = self.gnss.data(self.pose) if self.gnss else None #追加
+        if self.sensor:
+            obs = self.sensor.data(self.pose)
+        elif self.gnss:
+            obs = self.gnss.data(self.pose)
+        else:
+            obs = None
         nu, omega = self.agent.decision(obs) #引数追加
         self.pose = self.state_transition(nu, omega, time_interval, self.pose)
-        if self.sensor: self.sensor.data(self.pose)   
 
 # %%
 class Agent: 
@@ -170,32 +173,34 @@ class IdealCamera:
 
 # %%
 class IdealGnss:
-    def __init__(self, time_interval, hz=2):
-        # time_interval-0.1, hz-2と仮定
+    def __init__(self, time_interval, hz=1):
         self.time_interval = time_interval
         self.hz = hz
         self.count = 0
+        self.t = int((self.time_interval/self.hz)*100)
+        self.lastdata = None
     
-    def is_visible(self):
-        if self.count % ((self.time_interval/self.hz)*100) == 0:
-            self.count += 1
+    def visible(self):
+        if self.count == self.t:
+            self.count = 0
             return True
         else:
             self.count += 1
             return False
     
     def data(self, pose):
-        if self.is_visible():
+        if self.visible():
+            self.lastdata = pose
             return pose
         else:
+            self.lastdata = None
             return None
 
     def draw(self, ax, elems, pose):
-            pose = self.data(pose)
-            if pose is not None:
-                x, y, theta = pose
-                p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
-                elems.append(p)
+        if self.lastdata is not None:
+            x, y, theta = self.lastdata
+            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
+            elems.append(p)
 
 # %%
 if __name__ == '__main__':   ###name_indent

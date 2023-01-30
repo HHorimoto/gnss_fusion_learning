@@ -62,8 +62,12 @@ class Robot(IdealRobot):
             
     def one_step(self, time_interval):
         if not self.agent: return
-        obs = self.sensor.data(self.pose) if self.sensor else None
-        obs = self.gnss.data(self.pose) if self.gnss else None
+        if self.sensor:
+            obs = self.sensor.data(self.pose)
+        elif self.gnss:
+            obs = self.gnss.data(self.pose)
+        else:
+            obs = None
         nu, omega = self.agent.decision(obs)
         nu, omega = self.bias(nu, omega)
         nu, omega = self.stuck(nu, omega, time_interval)
@@ -140,7 +144,7 @@ class Camera(IdealCamera): ###noisesim_occlusion###
 
 # %%
 class Gnss(IdealGnss):
-    def __init__(self, time_interval, hz=2,
+    def __init__(self, time_interval, hz=1,
                  x_noise_stddev=0.2, y_noise_stddev=0.2, theta_noise_stddev=0.2, distance_noise_rate=0.1,
                  oversight_prob=0.1):
         super().__init__(time_interval, hz)
@@ -151,6 +155,8 @@ class Gnss(IdealGnss):
         self.distance_noise_rate = distance_noise_rate
         
         self.oversight_prob = oversight_prob
+        
+        self.lastdata = None
     
     def noise(self, relpos):
         x = norm.rvs(loc=relpos[0], scale=self.x_noise_stddev)
@@ -168,18 +174,21 @@ class Gnss(IdealGnss):
     def data(self, pose):
         z = self.oversight(pose)
         if z is None:
+            self.lastdata = None
             return None
-        if self.is_visible():
-            z = self.noise(z)
-            return z
         else:
-            return None
+            if self.visible():
+                nz = self.noise(z)
+                self.lastdata = nz
+                return nz
+            else:
+                self.lastdata = None
+                return None
     
     def draw(self, ax, elems, pose):
-        z = self.data(pose)
-        if z is not None:
-            x, y, theta = z
-            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
+        if self.lastdata is not None:
+            x, y, theta = self.lastdata
+            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.0, color="green", alpha=1.0)
             elems.append(p)        
         
 
