@@ -5,11 +5,11 @@ from scipy.stats import expon, norm, uniform
 # %%
 class Robot(IdealRobot):
         
-    def __init__(self, pose, agent=None, sensor=None, color="black", \
+    def __init__(self, pose, agent=None, sensor=None, gnss=None, color="black", \
                            noise_per_meter=5, noise_std=math.pi/60, bias_rate_stds=(0.1,0.1), \
                            expected_stuck_time=1e100, expected_escape_time = 1e-100,\
                            expected_kidnap_time=1e100, kidnap_range_x = (-5.0,5.0), kidnap_range_y = (-5.0,5.0)): #追加
-        super().__init__(pose, agent, sensor, color)
+        super().__init__(pose, agent, sensor, gnss, color)
         self.noise_pdf = expon(scale=1.0/(1e-100 + noise_per_meter))
         self.distance_until_noise = self.noise_pdf.rvs()
         self.theta_noise = norm(scale=noise_std)
@@ -138,26 +138,71 @@ class Camera(IdealCamera): ###noisesim_occlusion###
         return observed
 
 # %%
-if __name__ == '__main__': 
-    world = World(30, 0.1, debug=False)  
+class Gnss(IdealGnss):
+    def __init__(self, time_interval, hz=2,
+                 x_noise_stddev=0.2, y_noise_stddev=0.2, theta_noise_stddev=0.2,
+                 oversight_prob=0.1):
+        super().__init__(time_interval, hz)
+        
+        self.x_noise_stddev = x_noise_stddev
+        self.y_noise_stddev = y_noise_stddev
+        self.theta_noise_stddev = theta_noise_stddev
+        
+        self.oversight_prob = oversight_prob
+    
+    def noise(self, relpos):
+        x = norm.rvs(loc=relpos[0], scale=self.x_noise_stddev)
+        y = norm.rvs(loc=relpos[1], scale=self.y_noise_stddev)
+        theta = norm.rvs(loc=relpos[2], scale=self.theta_noise_stddev)
+        return np.array([x, y, theta]).T
+        
+    def oversight(self, relpose):
+        if uniform.rvs() < self.oversight_prob:
+            return None
+        else:
+            return relpose
+        
+    def data(self, pose):
+        z = self.oversight(pose)
+        if z is None:
+            return None
+        if self.is_visible():
+            z = self.noise(z)
+            return z
+        else:
+            return None
+    
+    def draw(self, ax, elems, pose):
+        z = self.data(pose)
+        if z is not None:
+            x, y, theta = z
+            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
+            elems.append(p)        
+        
 
-    ### 地図を生成して3つランドマークを追加 ###
-    m = Map()                                  
-    m.append_landmark(Landmark(-4,2))
-    m.append_landmark(Landmark(2,-3))
-    m.append_landmark(Landmark(3,3))
-    world.append(m)          
+# %%
+world = World(30, 0.1, debug=False)     
+
+### ロボットを作る ###
+straight = Agent(0.2, 0.0)    
+circling = Agent(0.2, 10.0/180*math.pi)  
+r = Robot(np.array([2, 2, math.pi/6]).T, gnss=Gnss(0.1), agent=circling) 
+world.append(r)
+
+### アニメーション実行 ###
+world.draw()
+
+# %%
+if __name__ == '__main__': 
+    world = World(30, 0.1, debug=False)     
 
     ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
-    r = Robot( np.array([ 2, 2, math.pi/6]).T, sensor=Camera(m, occlusion_prob=0.1), agent=circling) 
+    r = Robot(np.array([2, 2, math.pi/6]).T, gnss=Gnss(0.1), agent=circling) 
     world.append(r)
 
     ### アニメーション実行 ###
     world.draw()
-
-# %%
-
 
 
