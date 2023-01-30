@@ -146,7 +146,7 @@ class Camera(IdealCamera): ###noisesim_occlusion###
 class Gnss(IdealGnss):
     def __init__(self, time_interval, hz=1,
                  x_noise_stddev=0.2, y_noise_stddev=0.2, theta_noise_stddev=0.2, distance_noise_rate=0.1,
-                 oversight_prob=0.1):
+                 oversight_prob=0.1, phantom_prob=0.05, phantom_range_x=(-5.0,5.0), phantom_range_y=(-5.0,5.0), phantom_range_theta=(-180.0+1e-100,180.0)):
         super().__init__(time_interval, hz)
         
         self.x_noise_stddev = x_noise_stddev
@@ -155,8 +155,20 @@ class Gnss(IdealGnss):
         self.distance_noise_rate = distance_noise_rate
         
         self.oversight_prob = oversight_prob
+
+        self.phantom_x = uniform(phantom_range_x[0], phantom_range_x[1])
+        self.phantom_y = uniform(phantom_range_y[0], phantom_range_y[1])
+        self.phantom_theta = uniform(phantom_range_theta[0], phantom_range_theta[1])
+        self.phantom_prob = phantom_prob
         
         self.lastdata = None
+    
+    def phantom(self, relpos):
+        if uniform.rvs() < self.phantom_prob:
+            pos = np.array([self.phantom_x.rvs(), self.phantom_y.rvs(), self.phantom_theta.rvs()]).T
+            return pos
+        else:
+            return relpos
     
     def noise(self, relpos):
         x = norm.rvs(loc=relpos[0], scale=self.x_noise_stddev)
@@ -173,14 +185,15 @@ class Gnss(IdealGnss):
         
     def data(self, pose):
         z = self.oversight(pose)
+        z = self.phantom(pose)
         if z is None:
             self.lastdata = None
             return None
         else:
             if self.visible():
-                nz = self.noise(z)
-                self.lastdata = nz
-                return nz
+                z = self.noise(z)
+                self.lastdata = z
+                return z
             else:
                 self.lastdata = None
                 return None
@@ -191,6 +204,19 @@ class Gnss(IdealGnss):
             p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.0, color="green", alpha=1.0)
             elems.append(p)        
         
+
+# %%
+
+world = World(30, 0.1, debug=False)     
+
+### ロボットを作る ###
+straight = Agent(0.2, 0.0)    
+circling = Agent(0.2, 10.0/180*math.pi)  
+r = Robot(np.array([2, 2, math.pi/6]).T, gnss=Gnss(0.1), agent=circling) 
+world.append(r)
+
+### アニメーション実行 ###
+world.draw()
 
 # %%
 if __name__ == '__main__': 
