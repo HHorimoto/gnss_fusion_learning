@@ -127,7 +127,5 @@ def trial():
     world.append(r)
 
     world.draw()
-    
-trial()
 
 
