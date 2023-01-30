@@ -140,20 +140,22 @@ class Camera(IdealCamera): ###noisesim_occlusion###
 # %%
 class Gnss(IdealGnss):
     def __init__(self, time_interval, hz=2,
-                 x_noise_stddev=0.2, y_noise_stddev=0.2, theta_noise_stddev=0.2,
+                 x_noise_stddev=0.2, y_noise_stddev=0.2, theta_noise_stddev=0.2, distance_noise_rate=0.1,
                  oversight_prob=0.1):
         super().__init__(time_interval, hz)
         
         self.x_noise_stddev = x_noise_stddev
         self.y_noise_stddev = y_noise_stddev
         self.theta_noise_stddev = theta_noise_stddev
+        self.distance_noise_rate = distance_noise_rate
         
         self.oversight_prob = oversight_prob
     
     def noise(self, relpos):
         x = norm.rvs(loc=relpos[0], scale=self.x_noise_stddev)
         y = norm.rvs(loc=relpos[1], scale=self.y_noise_stddev)
-        theta = norm.rvs(loc=relpos[2], scale=self.theta_noise_stddev)
+        theta = norm.rvs(loc=relpos[2], 
+                         scale=self.theta_noise_stddev+(math.sqrt(math.pow(relpos[0]-x, 2) + math.pow(relpos[1]-y, 2))*self.distance_noise_rate))
         return np.array([x, y, theta]).T
         
     def oversight(self, relpose):
@@ -179,18 +181,6 @@ class Gnss(IdealGnss):
             p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
             elems.append(p)        
         
-
-# %%
-world = World(30, 0.1, debug=False)     
-
-### ロボットを作る ###
-straight = Agent(0.2, 0.0)    
-circling = Agent(0.2, 10.0/180*math.pi)  
-r = Robot(np.array([2, 2, math.pi/6]).T, gnss=Gnss(0.1), agent=circling) 
-world.append(r)
-
-### アニメーション実行 ###
-world.draw()
 
 # %%
 if __name__ == '__main__': 
