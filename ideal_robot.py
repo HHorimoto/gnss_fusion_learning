@@ -34,6 +34,7 @@ class World:
         else:
             self.ani = anm.FuncAnimation(fig, self.one_step, fargs=(elems, ax),
                                      frames=int(self.time_span/self.time_interval)+1, interval=int(self.time_interval*1000), repeat=False)
+            self.ani.save("result.gif", writer='imagemagick')
             plt.close()
             return HTML(self.ani.to_jshtml())
         
