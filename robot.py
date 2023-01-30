@@ -62,7 +62,8 @@ class Robot(IdealRobot):
             
     def one_step(self, time_interval):
         if not self.agent: return
-        obs =self.sensor.data(self.pose) if self.sensor else None
+        obs = self.sensor.data(self.pose) if self.sensor else None
+        obs = self.gnss.data(self.pose) if self.gnss else None
         nu, omega = self.agent.decision(obs)
         nu, omega = self.bias(nu, omega)
         nu, omega = self.stuck(nu, omega, time_interval)
