@@ -86,7 +86,8 @@ class IdealRobot:
 
     def one_step(self, time_interval):
         if not self.agent: return        
-        obs =self.sensor.data(self.pose) if self.sensor else None #追加
+        obs = self.sensor.data(self.pose) if self.sensor else None #追加
+        obs = self.gnss.data(self.pose) if self.gnss else None #追加
         nu, omega = self.agent.decision(obs) #引数追加
         self.pose = self.state_transition(nu, omega, time_interval, self.pose)
         if self.sensor: self.sensor.data(self.pose)   
@@ -182,12 +183,19 @@ class IdealGnss:
         else:
             self.count += 1
             return False
+    
+    def data(self, pose):
+        if self.is_visible():
+            return pose
+        else:
+            return None
 
     def draw(self, ax, elems, pose):
-        if self.is_visible():
-            x, y, theta = pose
-            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
-            elems.append(p)
+            pose = self.data(pose)
+            if pose is not None:
+                x, y, theta = pose
+                p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
+                elems.append(p)
 
 # %%
 if __name__ == '__main__':   ###name_indent
