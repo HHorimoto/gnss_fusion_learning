@@ -1,4 +1,3 @@
-
 # %%
 import matplotlib
 from IPython.display import HTML
@@ -48,13 +47,14 @@ class World:
 
 # %%
 class IdealRobot:   
-    def __init__(self, pose, agent=None, sensor=None, color="black"):    # 引数を追加
+    def __init__(self, pose, agent=None, sensor=None, gnss=None, color="black"):    # 引数を追加
         self.pose = pose
         self.r = 0.2  
         self.color = color 
         self.agent = agent
         self.poses = [pose]
         self.sensor = sensor    # 追加
+        self.gnss = gnss
     
     def draw(self, ax, elems):         ### call_agent_draw
         x, y, theta = self.pose  
@@ -67,7 +67,9 @@ class IdealRobot:
         elems += ax.plot([e[0] for e in self.poses], [e[1] for e in self.poses], linewidth=0.5, color="black")
         if self.sensor and len(self.poses) > 1: 
             self.sensor.draw(ax, elems, self.poses[-2])
-        if self.agent and hasattr(self.agent, "draw"):                               #以下2行追加   
+        if self.gnss and len(self.poses) > 1:
+            self.gnss.draw(ax, elems, self.poses[-2])
+        if self.agent and hasattr(self.agent, "draw"): 
             self.agent.draw(ax, elems)
          
     @classmethod           
@@ -166,21 +168,36 @@ class IdealCamera:
             elems += ax.plot([x,lx], [y,ly], color="pink")
 
 # %%
-if __name__ == '__main__':   ###name_indent
-    world = World(30, 0.1) 
+class IdealGnss:
+    def __init__(self, time_interval, hz=2):
+        # time_interval-0.1, hz-2と仮定
+        self.time_interval = time_interval
+        self.hz = hz
+        self.count = 0
+    
+    def is_visible(self):
+        if self.count % ((self.time_interval/self.hz)*100) == 0:
+            self.count += 1
+            return True
+        else:
+            self.count += 1
+            return False
 
-    ### 地図を生成して3つランドマークを追加 ###
-    m = Map()                                  
-    m.append_landmark(Landmark(2,-2))
-    m.append_landmark(Landmark(-1,-3))
-    m.append_landmark(Landmark(3,3))
-    world.append(m)          
+    def draw(self, ax, elems, pose):
+        if self.is_visible():
+            x, y, theta = pose
+            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.5, color="green", alpha=1.0)
+            elems.append(p)
+
+# %%
+if __name__ == '__main__':   ###name_indent
+    world = World(30, 0.1)         
 
     ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
-    robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T,    sensor=IdealCamera(m), agent=straight )             # 引数にcameraを追加、整理
-    robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, sensor=IdealCamera(m), agent=circling, color="red")  # robot3は消しました
+    robot1 = IdealRobot( np.array([ 2, 3, math.pi/6]).T, gnss=IdealGnss(0.1), agent=straight)             # 引数にcameraを追加、整理
+    robot2 = IdealRobot( np.array([-2, -1, math.pi/5*6]).T, gnss=IdealGnss(0.1), agent=circling, color="red")  # robot3は消しました
     world.append(robot1)
     world.append(robot2)
 
