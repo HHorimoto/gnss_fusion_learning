@@ -36,7 +36,7 @@ def matQ(x_dev, y_dev, theta_dev):
 class KalmanFilter: ###kf4init
     def __init__(self, envmap, init_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, \
                  distance_dev_rate=0.05, direction_dev=0.05, x_dev=0.25, y_dev=0.25, theta_dev=0.05, \
-                 rejection_threshold=0.001): #変数追加
+                 rejection=True, rejection_threshold=0.001, safety_ratio=[1.0, 1.0, 1.0]): #変数追加
         self.belief = multivariate_normal(mean=init_pose, cov=np.diag([1e-10, 1e-10, 1e-10])) 
         self.pose = self.belief.mean
         self.motion_noise_stds = motion_noise_stds
@@ -46,11 +46,14 @@ class KalmanFilter: ###kf4init
         self.x_dev = x_dev
         self.y_dev = y_dev
         self.theta_dev = theta_dev
+        self.rejection = rejection
         self.rejection_threshold = rejection_threshold
+        self.safety_ratio = np.diag(np.array(safety_ratio))
         
     def observation_update(self, observation):  #追加
         if observation is None: return
-        if self.outlier(observation): return
+        if self.rejection: 
+            if self.outlier(observation): return
         H = matH()
         gx, gy, _ = observation
         ex, ey, _ = self.pose
@@ -62,6 +65,7 @@ class KalmanFilter: ###kf4init
         K = self.belief.cov.dot(H.T).dot(np.linalg.inv(Q + H.dot(self.belief.cov).dot(H.T)))
         self.belief.mean += K.dot(observation - self.pose)
         self.belief.cov = (np.eye(3) - K.dot(H)).dot(self.belief.cov)
+        self.belief.cov = self.expansion_cov(self.belief.cov)
         self.pose = self.belief.mean
         
     def motion_update(self, nu, omega, time): #追加
@@ -71,6 +75,7 @@ class KalmanFilter: ###kf4init
         A = matA(nu, omega, time, self.belief.mean[2])
         F = matF(nu, omega, time, self.belief.mean[2])
         self.belief.cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
+        self.belief.cov = self.expansion_cov(self.belief.cov)
         self.belief.mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
         self.pose = self.belief.mean #他のクラスで使う
     
@@ -81,6 +86,9 @@ class KalmanFilter: ###kf4init
             return False
         else:
             return True
+    
+    def expansion_cov(self, cov):
+        return cov.dot(self.safety_ratio)
         
     def draw(self, ax, elems):
         ###xy平面上の誤差の3シグマ範囲###
