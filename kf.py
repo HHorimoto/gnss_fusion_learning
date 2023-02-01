@@ -50,7 +50,7 @@ class KalmanFilter: ###kf4init
         
     def observation_update(self, observation):  #追加
         if observation is None: return
-        if not self.outlier(observation): return
+        if self.outlier(observation): return
         H = matH()
         gx, gy, _ = observation
         ex, ey, _ = self.pose
@@ -78,9 +78,9 @@ class KalmanFilter: ###kf4init
         delta = self.pose - observation
         dist = (delta).T.dot(np.linalg.inv(self.belief.cov)).dot(delta)
         if dist <= chi2.ppf(1.0-self.rejection_threshold, 3):
-            return True
-        else:
             return False
+        else:
+            return True
         
     def draw(self, ax, elems):
         ###xy平面上の誤差の3シグマ範囲###
