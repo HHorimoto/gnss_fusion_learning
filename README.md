@@ -1,6 +1,8 @@
 # gnss_fusion_learning
 
-## MCL (Monte Carlo localization)
+Provides python scripts and jupyter notebook applying Monte Carlo Localization and Kalman Filter to GNSS(GPS) data for localization.
+
+## MCL (Monte Carlo Localization)
 
 <img src="./media/mcl_result.gif">
 
