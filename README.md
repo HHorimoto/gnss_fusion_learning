@@ -1,6 +1,12 @@
 # gnss_fusion_learning
 
-Provides python scripts and jupyter notebook applying Monte Carlo Localization and Kalman Filter to GNSS(GPS) data for localization.
+---
+* This package is licensed under MIT license.
+* The code lines in this package are partially derived from [ryuichiueda/LNPR](https://github.com/ryuichiueda/LNPR) (© Ryuichi Ueda 2019) under MIT license.
+---
+
+## Overview
+Provides python scripts and jupyter notebook applying Monte Carlo Localization and Kalman Filter to GNSS(GPS) data for localization.   
 
 ## MCL (Monte Carlo Localization)
 
@@ -9,10 +15,3 @@ Provides python scripts and jupyter notebook applying Monte Carlo Localization a
 ## KF (Kalman Filter)
 
 <img src="./media/kf_result.gif">
-
-## Reference  
-+ [https://github.com/ryuichiueda/LNPR_BOOK_CODES](https://github.com/ryuichiueda/LNPR_BOOK_CODES)
-+ [https://github.com/NaokiAkai/AutoNaviSim](https://github.com/NaokiAkai/AutoNaviSim)
-+ [https://github.com/motokimura/kalman_filter_witi_kitti](https://github.com/motokimura/kalman_filter_witi_kitti)
-+ [https://myenigma.hatenablog.com/entry/20140825/1408975706](https://myenigma.hatenablog.com/entry/20140825/1408975706)
-+ [https://tech.tier4.jp/entry/2021/08/04/160000](https://tech.tier4.jp/entry/2021/08/04/160000)
