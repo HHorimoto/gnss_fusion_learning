@@ -20,6 +20,15 @@ Provides python scripts and jupyter notebook applying Monte Carlo Localization a
 
 <img src="./media/ukf_result.gif">
 
+## Computation time (MCL vs EKF vs UKF)
+The computation time required for each method is shown in the table below. The number of trials is 100, and the numbers in parentheses in the MCL indicate the number of particles. It is good to see that the processing speed rankings are the same as the theoretical ones.
+
+| Time (sec)    | MCL (100) | MCL (1000) |  EKF  |  UKF  | 
+| ------------- | :-------: | :--------: | :---: | :---: | 
+| Average Time  |   4.414   |   35.223   | 0.631 | 0.730 | 
+| Maximum Time  |   6.485   |   43.219   | 0.805 | 0.992 | 
+| Minimum Time  |   3.984   |   34.136   | 0.588 | 0.675 | 
+
 ## Reference
 [1] [https://github.com/ryuichiueda/LNPR_SLIDES](https://github.com/ryuichiueda/LNPR_SLIDES)   
 [2] [https://github.com/NaokiAkai/AutoNaviSim](https://github.com/NaokiAkai/AutoNaviSim)   
