@@ -1,5 +1,7 @@
 # %%
-from kf import *
+import sys
+sys.path.append('../scripts/')
+from ekf import *
 from scipy.linalg import cholesky
 
 # %%

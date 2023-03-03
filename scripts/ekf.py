@@ -1,4 +1,6 @@
 # %%
+import sys
+sys.path.append('../scripts/')
 from mcl import *
 from scipy.stats import multivariate_normal, chi2
 from matplotlib.patches import Ellipse
@@ -33,7 +35,7 @@ def matQ(x_dev, y_dev, theta_dev):
     return np.diag(np.array([x_dev**2, y_dev**2, theta_dev**2]))
 
 # %%
-class KalmanFilter:
+class ExtendedKalmanFilter:
     def __init__(self, init_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, \
                  distance_dev_rate=0.05, x_dev=0.25, y_dev=0.25, theta_dev=0.05, \
                  rejection=True, rejection_threshold=0.001, safety_ratio=[1.0, 1.0, 1.0]): #変数追加
@@ -107,7 +109,7 @@ if __name__ == '__main__':
 
     ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
-    kf = KalmanFilter(initial_pose)
+    kf = ExtendedKalmanFilter(initial_pose)
     circling = EstimationAgent(time_interval, 0.2, 10.0/180*math.pi, kf)
     r = Robot(initial_pose, gnss=Gnss(time_interval, hz=1), agent=circling, color="red")
     world.append(r)
