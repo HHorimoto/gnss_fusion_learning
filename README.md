@@ -12,6 +12,10 @@ This provides python scripts and jupyter notebook for localization.
 
 <img src="./media/mcl_result.gif">
 
+## GPF (Gaussian Particle Filter)
+
+<img src="./media/gpf_result.gif">
+
 ## EKF (Extended Kalman Filter)
 
 <img src="./media/kf_result.gif">
@@ -20,14 +24,14 @@ This provides python scripts and jupyter notebook for localization.
 
 <img src="./media/ukf_result.gif">
 
-## Computation time (MCL vs EKF vs UKF)
-The computation time required for each method is shown in the table below. The number of trials is 100, and the numbers in parentheses in the MCL indicate the number of particles. It is good to see that the processing speed rankings are the same as the theoretical ones.
+## Computation time
+The computation time required for each method is shown in the table below. The number of trials is 100, and the numbers in parentheses in the MCL and GPF indicate the number of particles. It is good to see that the processing speed rankings are the same as the theoretical ones.
 
-| Time (sec)    | MCL (100) | MCL (1000) |  EKF  |  UKF  | 
+| Time (sec)    | MCL (100) |  GPF (100) |  EKF  |  UKF  | 
 | ------------- | :-------: | :--------: | :---: | :---: | 
-| Average Time  |   4.414   |   35.223   | 0.631 | 0.730 | 
-| Maximum Time  |   6.485   |   43.219   | 0.805 | 0.992 | 
-| Minimum Time  |   3.984   |   34.136   | 0.588 | 0.675 | 
+| Average Time  |   4.414   |   4.617    | 0.631 | 0.730 | 
+| Maximum Time  |   6.485   |   6.421    | 0.805 | 0.992 | 
+| Minimum Time  |   3.984   |   4.337    | 0.588 | 0.675 | 
 
 ## Reference
 [1] [https://github.com/ryuichiueda/LNPR_SLIDES](https://github.com/ryuichiueda/LNPR_SLIDES)   
