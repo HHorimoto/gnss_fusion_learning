@@ -20,30 +20,23 @@ class UnscentedKalmanFilter:
         self.rejection = rejection
         self.rejection_threshold = rejection_threshold
         
-        # set up ukf
-        ## setting dimensions
         self.dim_x = dim_x
         self.dim_u = dim_u
         self.dim_z = dim_z
         self.dim_a = dim_x + dim_u + dim_z
         
-        ## setting number of sigma points to be generated
         self.n_sigma = (2*self.dim_a) + 1
         
-        ## setting scaling parameters
         self.kappa = 3 - self.dim_a
         self.alpha = alpha
         self.beta = beta
         self.lambda_ = self.alpha**2 * (self.dim_a + self.kappa) - self.dim_a
 
-        ## setting scale coefficient for selecting sigma points
         self.sigma_scale = np.sqrt(self.dim_a + self.kappa)
         
-        ## calculate unscented weights
         self.W0 = self.kappa / (self.dim_a + self.kappa)
         self.Wi = 0.5 / (self.dim_a + self.kappa)
         
-        ## initializing augmented state x_a and augmented covariance P_a
         self.x_a = np.zeros((self.dim_a, ))
         self.P_a = np.zeros((self.dim_a, self.dim_a))
         
@@ -64,11 +57,11 @@ class UnscentedKalmanFilter:
 
     def calculate_mean_and_covariance(self, y_sigmas):
         ydim = np.shape(y_sigmas)[0]
-        # mean calculation
+
         y = self.W0 * y_sigmas[:, 0]
         for i in range(1, self.n_sigma):
             y += self.Wi * y_sigmas[:, i]
-        # covariance calculation
+
         d = (y_sigmas[:, 0] - y).reshape([-1, 1])
         Pyy = self.W0 * d.dot(d.T)
         for i in range(1, self.n_sigma):
@@ -157,7 +150,6 @@ if __name__ == '__main__':
     time_interval = 0.1
     world = World(30, time_interval, debug=False)        
 
-    ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
     ukf = UnscentedKalmanFilter(initial_pose)
     circling = EstimationAgent(time_interval, 0.2, 10.0/180*math.pi, ukf)

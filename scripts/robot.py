@@ -125,13 +125,11 @@ class Gnss(IdealGnss):
 if __name__ == '__main__': 
     world = World(30, 0.1, debug=False)     
 
-    ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
     r = Robot(np.array([2, 2, math.pi/6]).T, gnss=Gnss(0.1), agent=circling) 
     world.append(r)
 
-    ### アニメーション実行 ###
     world.draw()
 
 

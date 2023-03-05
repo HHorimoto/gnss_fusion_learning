@@ -38,7 +38,7 @@ def matQ(x_dev, y_dev, theta_dev):
 class ExtendedKalmanFilter:
     def __init__(self, init_pose, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, \
                  distance_dev_rate=0.05, x_dev=0.25, y_dev=0.25, theta_dev=0.05, \
-                 rejection=True, rejection_threshold=0.001, safety_ratio=[1.0, 1.0, 1.0]): #変数追加
+                 rejection=True, rejection_threshold=0.001, safety_ratio=[1.0, 1.0, 1.0]):
         self.belief = multivariate_normal(mean=init_pose, cov=np.diag([1e-10, 1e-10, 1e-10])) 
         self.pose = self.belief.mean
         self.motion_noise_stds = motion_noise_stds
@@ -50,7 +50,7 @@ class ExtendedKalmanFilter:
         self.rejection_threshold = rejection_threshold
         self.safety_ratio = np.diag(np.array(safety_ratio))
         
-    def observation_update(self, observation):  #追加
+    def observation_update(self, observation):
         if observation is None: return
         if self.rejection: 
             if self.outlier(observation): return
@@ -68,8 +68,8 @@ class ExtendedKalmanFilter:
         self.belief.cov = self.expansion_cov(self.belief.cov)
         self.pose = self.belief.mean
         
-    def motion_update(self, nu, omega, time): #追加
-        if abs(omega) < 1e-5: omega = 1e-5 #値が0になるとゼロ割りになって計算ができないのでわずかに値を持たせる
+    def motion_update(self, nu, omega, time):
+        if abs(omega) < 1e-5: omega = 1e-5
 
         M = matM(nu, omega, time, self.motion_noise_stds)
         A = matA(nu, omega, time, self.belief.mean[2])
@@ -77,7 +77,7 @@ class ExtendedKalmanFilter:
         self.belief.cov = F.dot(self.belief.cov).dot(F.T) + A.dot(M).dot(A.T)
         self.belief.cov = self.expansion_cov(self.belief.cov)
         self.belief.mean = IdealRobot.state_transition(nu, omega, time, self.belief.mean)
-        self.pose = self.belief.mean #他のクラスで使う
+        self.pose = self.belief.mean
     
     def outlier(self, observation):
         delta = self.pose - observation
@@ -91,11 +91,9 @@ class ExtendedKalmanFilter:
         return cov.dot(self.safety_ratio)
         
     def draw(self, ax, elems):
-        ###xy平面上の誤差の3シグマ範囲###
         e = sigma_ellipse(self.belief.mean[0:2], self.belief.cov[0:2, 0:2], 3)
         elems.append(ax.add_patch(e))
 
-        ###θ方向の誤差の3シグマ範囲###
         x, y, c = self.belief.mean
         sigma3 = math.sqrt(self.belief.cov[2, 2])*3
         xs = [x + math.cos(c-sigma3), x, x + math.cos(c+sigma3)]
@@ -107,7 +105,6 @@ if __name__ == '__main__':
     time_interval = 0.1
     world = World(30, time_interval, debug=False)        
 
-    ### ロボットを作る ###
     initial_pose = np.array([0, 0, 0]).T
     kf = ExtendedKalmanFilter(initial_pose)
     circling = EstimationAgent(time_interval, 0.2, 10.0/180*math.pi, kf)

@@ -48,7 +48,7 @@ class World:
 
 # %%
 class IdealRobot:   
-    def __init__(self, pose, agent=None, gnss=None, color="black"):    # 引数を追加
+    def __init__(self, pose, agent=None, gnss=None, color="black"):
         self.pose = pose
         self.r = 0.2  
         self.color = color 
@@ -56,7 +56,7 @@ class IdealRobot:
         self.poses = [pose]
         self.gnss = gnss
     
-    def draw(self, ax, elems):         ### call_agent_draw
+    def draw(self, ax, elems):
         x, y, theta = self.pose  
         xn = x + self.r * math.cos(theta)  
         yn = y + self.r * math.sin(theta)  
@@ -135,7 +135,6 @@ class IdealGnss:
 if __name__ == '__main__':
     world = World(30, 0.1)         
 
-    ### ロボットを作る ###
     straight = Agent(0.2, 0.0)    
     circling = Agent(0.2, 10.0/180*math.pi)  
     robot1 = IdealRobot(np.array([2, 3, math.pi/6]).T, gnss=IdealGnss(0.1), agent=straight)
@@ -143,7 +142,6 @@ if __name__ == '__main__':
     world.append(robot1)
     world.append(robot2)
 
-    ### アニメーション実行 ###
     world.draw()
 
 

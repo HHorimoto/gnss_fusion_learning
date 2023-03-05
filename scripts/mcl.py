@@ -31,7 +31,7 @@ class Particle:
         self.weight *= multivariate_normal(mean=self.pose, cov=cov).pdf(observation)
 
 # %%
-class Mcl:    ###mlparticle（12〜18行目）
+class Mcl:
     def __init__(self, init_pose, num, motion_noise_stds={"nn":0.19, "no":0.001, "on":0.13, "oo":0.2}, \
                  distance_dev_rate=0.14, direction_dev=0.05, x_dev=0.05, y_dev=0.05, theta_dev=0.05):
         self.particles = [Particle(init_pose, 1.0/num) for i in range(num)]
