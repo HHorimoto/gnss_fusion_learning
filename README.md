@@ -6,7 +6,7 @@
 ---
 
 ## Overview
-Provides python scripts and jupyter notebook applying Monte Carlo Localization and Kalman Filter to GNSS(GPS) data for localization.   
+This provides python scripts and jupyter notebook for localization.
 
 ## MCL (Monte Carlo Localization)
 
