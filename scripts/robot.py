@@ -112,13 +112,7 @@ class Gnss(IdealGnss):
                 return z
             else:
                 self.lastdata = None
-                return None
-    
-    def draw(self, ax, elems, pose):
-        if self.lastdata is not None:
-            x, y, theta = self.lastdata
-            p = ax.quiver(x, y, math.cos(theta), math.sin(theta), angles='xy', scale_units='xy', scale=1.0, color="green", alpha=1.0)
-            elems.append(p)        
+                return None      
         
 
 # %%
